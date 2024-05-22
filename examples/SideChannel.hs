@@ -56,7 +56,7 @@ hyper235 :: Dist (Dist Integer)
 hyper235 = project (hysem (exponentiation [2, 3, 5])
                           (uniform [initSE 6 exp | exp <- [0..15]]))
 
-jail :: Ord a => Dist a -> Rational
+jail :: Ord a => Dist a -> Double
 jail d = let m = maximum (elems (runD (reduction d)))
          in (1 * m - 5 * (1 - m)) `max` 0
 

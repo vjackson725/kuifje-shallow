@@ -14,7 +14,7 @@ import Data.Map.Strict (Map)
 import Data.Maybe (mapMaybe)
 
 -- | Type synonym for probabilities.
-type Prob = Rational
+type Prob = Double
 
 
 -- | List of values with probabilities.

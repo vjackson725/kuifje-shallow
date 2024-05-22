@@ -94,9 +94,9 @@ bayesVuln = (\x -> if null x then 1 else maximum x) . M.elems . runD . reduction
 
 -- | Based on an entropy function for distributions, calculate the
 -- average entropy for a hyper-distribution.
-condEntropy :: (Dist a -> Rational) -> Hyper a -> Rational
+condEntropy :: (Dist a -> Double) -> Hyper a -> Double
 condEntropy e m = average (fmapDist e m)
 
--- | Average a distribution of Rationals.
-average :: Dist Rational -> Rational
+-- | Average a distribution of Doubles.
+average :: Dist Double -> Double
 average = sum . M.mapWithKey (*) . runD

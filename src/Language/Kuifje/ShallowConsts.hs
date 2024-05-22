@@ -9,7 +9,7 @@ module Language.Kuifje.ShallowConsts where
 import Data.IORef
 import System.IO.Unsafe (unsafePerformIO)
 
--- Rationals are converted to decimal numbers on printing
+-- Doubles are converted to decimal numbers on printing
 -- If this integer is negative, they are printed as exact rationals
 -- defaults to 2
 refDecimalPrecision :: IORef Integer

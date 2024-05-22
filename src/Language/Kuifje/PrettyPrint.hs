@@ -37,6 +37,9 @@ rationalPrettyFormat =
 instance Boxable Rational where
   toBox = PP.text . rationalPrettyFormat
 
+instance Boxable Double where
+  toBox = PP.text . printf ("%." ++ show decimalPrecision ++ "f")
+
 instance Boxable a => Boxable [a] where
   toBox xs =
     let vs = map toBox xs
