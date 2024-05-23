@@ -6,6 +6,8 @@
 
 module Language.Kuifje.Semantics where
 
+import Debug.Trace
+
 import Data.Bifunctor (second)
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as M
@@ -24,21 +26,35 @@ type a ~~> b = Dist a -> Hyper b
 
 -- | Bind with reduction applied to the input distribution.
 (=>>) :: (Ord b) => Dist a -> (a -> Dist b) -> Dist b
-m =>> f = bindDist (reduction m) f
+m =>> f = reduction $ bindDist (reduction m) f
 
 -- | Kleisli composition.
 (==>) :: (Ord c) => (a ~> b) -> (b ~> c) -> (a ~> c)
-f ==> g = \x -> bindDist (f x) g
+f ==> g = \x ->  (f x) =>> g
+
+-- | Kleisli composition for hypers.
+(==~>) :: (Ord c) => (a ~~> b) -> (b ~~> c) -> (a ~~> c)
+f ==~> g = \x -> 
+            traceShowWith
+              (\ddv ->
+                  let mdv = runD ddv
+                      s1 = M.size mdv
+                      s2 = M.foldrWithKey (\d _ -> (+) (M.size . runD $ d)) 0 mdv
+                  in s1 + s2)
+            $ ((f x) =>> g)
 
 -- | For a given program, returns a function that calculates the
 -- hyper-distribution for a given input distribution.
-hysem :: (Ord s) => Kuifje s -> (s ~~> s)
-hysem Skip          = returnDist
-hysem (Update f p)  = huplift f ==> hysem p
-hysem (If c p q r)  = conditional c (hysem p) (hysem q) ==> hysem r
-hysem (While c p q) = let wh = conditional c (hysem p ==> wh) (hysem q)
-                      in wh
-hysem (Observe f p) = hobsem f ==> hysem p
+hysem :: (Ord s, Show s) => Kuifje s -> (s ~~> s)
+hysem Skip          = \s -> traceShow (M.size . runD $ s) $ (returnDist) s
+hysem (Update f p)  = \s -> traceShow (M.size . runD $ s) $ (huplift f ==~> hysem p) s
+hysem (If c p q r)  = \s -> traceShow (M.size . runD $ s) $ (conditional c (hysem p) (hysem q) ==~> hysem r) s
+hysem (While c p q) = \s -> traceShow (M.size . runD $ s) $
+                              (let wh = (conditional c (hysem p ==~> wh) (hysem q))
+                               in wh) s
+hysem (Observe f p) = \s ->
+  traceShow (M.size . runD $ s) $
+    (hobsem f ==~> hysem p) s
 
 -- | Conditional semantics ('If' and 'While').
 conditional :: forall s. (Ord s) => (s ~> Bool) -> (s ~~> s) -> (s ~~> s) -> (s ~~> s)

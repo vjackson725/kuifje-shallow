@@ -53,7 +53,7 @@ newtype Dist a = D { runD :: Map a Prob }
 
 -- | Recover the map representation of a distribution, reduced.
 unpackD :: Dist a -> Map a Prob
-unpackD = M.filter (/= 0) . runD
+unpackD = M.filter (> 0.0000001) . runD
 
 -- | Remove zeroes from a distribution.
 reduction :: Dist a -> Dist a
